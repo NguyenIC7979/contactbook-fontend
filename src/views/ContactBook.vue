@@ -40,102 +40,19 @@
           <i class="fas fa-address-card"></i>
         </h4>
         <ContactCard :contact="activeContact" />
+
+        <!-- ✅ Nút Hiệu chỉnh -->
+        <router-link
+          :to="{
+            name: 'contact.edit',
+            params: { id: activeContact._id },
+          }"
+        >
+          <span class="mt-2 badge badge-warning">
+            <i class="fas fa-edit"></i> Hiệu chỉnh
+          </span>
+        </router-link>
       </div>
     </div>
   </div>
 </template>
-
-<script>
-import ContactCard from "@/components/ContactCard.vue";
-import InputSearch from "@/components/InputSearch.vue";
-import ContactList from "@/components/ContactList.vue";
-import ContactService from "@/services/contact.service";
-
-export default {
-  components: {
-    ContactCard,
-    InputSearch,
-    ContactList,
-  },
-  data() {
-    return {
-      contacts: [], // Danh sách liên hệ
-      activeIndex: -1, // Vị trí liên hệ đang chọn
-      searchText: "", // Từ khóa tìm kiếm
-    };
-  },
-  watch: {
-    // Khi từ khóa tìm kiếm thay đổi, bỏ chọn liên hệ hiện tại
-    searchText() {
-      this.activeIndex = -1;
-    },
-  },
-  computed: {
-    // Tạo mảng các chuỗi chứa thông tin liên hệ (phục vụ tìm kiếm)
-    contactStrings() {
-      return this.contacts.map((contact) => {
-        const { name, email, address, phone } = contact;
-        return [name, email, address, phone].join("");
-      });
-    },
-    // Lọc danh sách liên hệ theo từ khóa tìm kiếm
-    filteredContacts() {
-      if (!this.searchText) return this.contacts;
-      return this.contacts.filter((_contact, index) =>
-        this.contactStrings[index]
-          .toLowerCase()
-          .includes(this.searchText.toLowerCase())
-      );
-    },
-    // Liên hệ đang được chọn (dựa vào chỉ mục)
-    activeContact() {
-      if (this.activeIndex < 0) return null;
-      return this.filteredContacts[this.activeIndex];
-    },
-    // Số lượng liên hệ sau khi lọc
-    filteredContactsCount() {
-      return this.filteredContacts.length;
-    },
-  },
-  methods: {
-    // Lấy danh sách liên hệ từ server
-    async retrieveContacts() {
-      try {
-        this.contacts = await ContactService.getAll();
-      } catch (error) {
-        console.error("Lỗi tải danh bạ:", error);
-      }
-    },
-    // Làm mới danh sách
-    refreshList() {
-      this.retrieveContacts();
-      this.activeIndex = -1;
-    },
-    // Xóa tất cả liên hệ
-    async removeAllContacts() {
-      if (confirm("Bạn muốn xóa tất cả Liên hệ?")) {
-        try {
-          await ContactService.deleteAll();
-          this.refreshList();
-        } catch (error) {
-          console.error("Lỗi xóa tất cả:", error);
-        }
-      }
-    },
-    // Chuyển sang trang thêm mới liên hệ
-    goToAddContact() {
-      this.$router.push({ name: "contact.add" });
-    },
-  },
-  mounted() {
-    this.refreshList();
-  },
-};
-</script>
-
-<style scoped>
-.page {
-  text-align: left;
-  max-width: 750px;
-}
-</style>
