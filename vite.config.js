@@ -1,21 +1,16 @@
-import { fileURLToPath, URL } from 'node:url'
-
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
 
-// https://vite.dev/config/
 export default defineConfig({
+  plugins: [vue()],
   server: {
-    port: 3001,
-  },
-  plugins: [
-    vue(),
-    vueDevTools(),
-  ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    },
-  },
+    port: 3001, // cổng chạy frontend
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000', // địa chỉ API server
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '/api') // giữ nguyên /api
+      }
+    }
+  }
 })
